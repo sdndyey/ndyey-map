@@ -126,9 +126,9 @@ body {
   background: #FFFDF9; border-radius: 16px;
   border: 2px solid #FFDAB9;
   box-shadow: 0 8px 32px rgba(0,0,0,0.12);
-  padding: 0; overflow: hidden;
+  padding: 0; overflow: visible;
 }
-.custom-popup .leaflet-popup-content { margin: 0; min-width: 240px; max-width: 340px; }
+.custom-popup .leaflet-popup-content { margin: 0; min-width: 240px; max-width: 340px; overflow-y: auto; max-height: 60vh; }
 .custom-popup .leaflet-popup-tip { background: #FFDAB9; }
 .custom-popup .leaflet-popup-close-button { top: 8px; right: 8px; color: #8D6E63; font-size: 18px; }
 .popup-header { padding: 14px 16px 10px; border-bottom: 2px dashed #E8D5C4; }
@@ -145,8 +145,8 @@ body {
 
 /* Photos in popup */
 .popup-photos { display: flex; gap: 8px; margin-top: 10px; overflow-x: auto; padding-bottom: 4px; }
-.popup-photos canvas { width: 200px; height: 140px; border-radius: 10px; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; flex-shrink: 0; display: block; }
-.popup-photos canvas:hover { border-color: #FFB74D; transform: scale(1.05); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
+.popup-illustration { margin-top: 10px; }
+.popup-illustration svg { width: 100%; height: auto; border-radius: 10px; border: 2px solid #E8D5C4; display: block; }
 
 /* Lightbox */
 .lightbox-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center; cursor: pointer; }
@@ -175,7 +175,7 @@ body {
   .sidebar { position: absolute; left: 0; top: 0; bottom: 0; transform: translateX(-100%); width: 280px; min-width: 280px; border-right: 2px solid var(--border); box-shadow: 4px 0 20px rgba(0,0,0,0.12); }
   .sidebar.open { transform: translateX(0); }
   .sidebar-toggle { display: flex; align-items: center; justify-content: center; }
-  .custom-popup .leaflet-popup-content { max-width: 260px; }
+  .custom-popup .leaflet-popup-content { max-width: 260px; max-height: 50vh; }
 }
 @media (max-width: 480px) {
   .header-logo { font-size: 24px; }
@@ -341,16 +341,10 @@ var RESOURCE_DATA = {"center":{"name":"深大诺德幼儿园","address":"深圳�
       }
     }
 
-    // Scene cards generated via Canvas (zero copyright, hand-drawn style)
+    // Scene illustration via inline SVG (zero dependency, zero copyright)
     var photosHtml = '';
-    if (item.name) {
-      var canvasId = 'canvas-' + item.id + '-' + Date.now();
-      photosHtml = '<div class="popup-photos"><canvas id="' + canvasId + '" width="200" height="140" onclick="showLightboxCanvas(\'' + canvasId + '\')"></canvas></div>';
-      // Schedule canvas rendering after DOM insertion
-      setTimeout(function() {
-        drawSceneCard(canvasId, item);
-      }, 10);
-    }
+    var svgScene = drawSceneSVG(item);
+    photosHtml = '<div class="popup-illustration">' + svgScene + '</div>';
 
     return '<div class="popup-card"><div class="popup-header"><div class="popup-name">' + item.name + '</div><span class="popup-cat-tag" style="background:' + item._catColor + '">' + item._catName + '</span></div><div class="popup-body"><div class="popup-row"><span class="popup-label">📏</span><span class="popup-value">距离幼儿园约 <b>' + item.distance + ' 公里</b></span></div>' + (item.address ? '<div class="popup-row"><span class="popup-label">📍</span><span class="popup-value">' + item.address + '</span></div>' : '') + (item.feature ? '<div class="popup-row"><span class="popup-label">✨</span><span class="popup-value">' + item.feature + '</span></div>' : '') + (actList.length > 0 ? '<span class="popup-section-title">🎯 适合的活动</span>' + tagsHtml : '') + trafficHtml + notesHtml + photosHtml + '</div></div>';
   }
@@ -535,7 +529,7 @@ var RESOURCE_DATA = {"center":{"name":"深大诺德幼儿园","address":"深圳�
   // --- Fly to item from sidebar ---
   function flyToItem(item) {
     if (!item.lat || !item.lng) return;
-    map.setView([item.lat, item.lng], 16, { animate: true });
+    map.setView([item.lat - 0.002, item.lng], 16, { animate: true });
 
     // Open popup
     var marker = markerMap[item.id];
@@ -642,14 +636,12 @@ var RESOURCE_DATA = {"center":{"name":"深大诺德幼儿园","address":"深圳�
   }
 
   // --- Lightbox ---
-  // --- Scene Card Drawing (Canvas, zero copyright) ---
-  window.drawSceneCard = function(canvasId, item) {
-    var canvas = document.getElementById(canvasId);
-    if (!canvas) return;
-    var ctx = canvas.getContext('2d');
-    var w = canvas.width, h = canvas.height;
-    
-    // Get category color as base
+  // --- Scene Illustration via inline SVG (zero dependency, zero copyright) ---
+  function drawSceneSVG(item) {
+    var catId = item._catId || 'other';
+    var w = 200, h = 140;
+
+    // Category colors
     var colors = {
       nature: ['#C8E6C9', '#A5D6A7', '#81C784', '#66BB6A'],
       commercial: ['#FFE0B2', '#FFCC80', '#FFB74D', '#FFA726'],
@@ -659,165 +651,117 @@ var RESOURCE_DATA = {"center":{"name":"深大诺德幼儿园","address":"深圳�
       education: ['#B2DFDB', '#80CBC4', '#4DB6AC', '#26A69A'],
       other: ['#D7CCC8', '#BCAAA4', '#A1887F', '#8D6E63']
     };
-    var palette = colors[item._catId] || colors.other;
-    
+    var p = colors[catId] || colors.other;
+
+    var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ' + w + ' ' + h + '" width="' + w + '" height="' + h + '">';
+
     // Sky gradient
-    var skyGrad = ctx.createLinearGradient(0, 0, 0, h * 0.45);
-    skyGrad.addColorStop(0, '#E3F2FD');
-    skyGrad.addColorStop(0.5, '#BBDEFB');
-    skyGrad.addColorStop(1, '#E8F5E9');
-    ctx.fillStyle = skyGrad;
-    ctx.fillRect(0, 0, w, h * 0.5);
-    
+    svg += '<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">';
+    svg += '<stop offset="0%" stop-color="#E3F2FD"/>';
+    svg += '<stop offset="50%" stop-color="#BBDEFB"/>';
+    svg += '<stop offset="100%" stop-color="#E8F5E9"/>';
+    svg += '</linearGradient>';
+    // Ground gradient
+    svg += '<linearGradient id="ground' + catId + '" x1="0" y1="0" x2="0" y2="1">';
+    svg += '<stop offset="0%" stop-color="' + p[0] + '"/>';
+    svg += '<stop offset="50%" stop-color="' + p[1] + '"/>';
+    svg += '<stop offset="100%" stop-color="' + p[2] + '"/>';
+    svg += '</linearGradient></defs>';
+
+    // Sky fill
+    svg += '<rect x="0" y="0" width="' + w + '" height="' + Math.floor(h * 0.5) + '" fill="url(#sky)"/>';
+
     // Sun
-    ctx.fillStyle = '#FFF9C4';
-    ctx.beginPath();
-    ctx.arc(w * 0.78, h * 0.18, 14, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#FFF176';
-    ctx.beginPath();
-    ctx.arc(w * 0.78, h * 0.18, 9, 0, Math.PI * 2);
-    ctx.fill();
-    
+    svg += '<circle cx="' + Math.floor(w * 0.78) + '" cy="' + Math.floor(h * 0.18) + '" r="14" fill="#FFF9C4"/>';
+    svg += '<circle cx="' + Math.floor(w * 0.78) + '" cy="' + Math.floor(h * 0.18) + '" r="9" fill="#FFF176"/>';
+
     // Clouds
-    drawCloud(ctx, w * 0.25, h * 0.12, 0.8);
-    drawCloud(ctx, w * 0.55, h * 0.22, 0.6);
-    
-    // Ground
-    var groundGrad = ctx.createLinearGradient(0, h * 0.45, 0, h);
-    groundGrad.addColorStop(0, palette[0]);
-    groundGrad.addColorStop(0.3, palette[1]);
-    groundGrad.addColorStop(1, palette[2]);
-    ctx.fillStyle = groundGrad;
-    ctx.fillRect(0, h * 0.45, w, h * 0.55);
-    
-    // Ground texture lines (hand-drawn feel)
-    ctx.strokeStyle = palette[3];
-    ctx.globalAlpha = 0.2;
-    ctx.lineWidth = 1;
-    for (var i = 0; i < 6; i++) {
-      var gx = Math.random() * w;
-      var gy = h * 0.5 + Math.random() * h * 0.45;
-      ctx.beginPath();
-      ctx.moveTo(gx, gy);
-      ctx.quadraticCurveTo(gx + 30, gy - 8, gx + 60, gy + 2);
-      ctx.stroke();
-    }
-    ctx.globalAlpha = 1;
-    
-    // Building/Scene silhouette based on category
-    drawSceneSilhouette(ctx, w, h, item._catId, palette);
-    
-    // Decorative trees
-    var treeX = [w * 0.15, w * 0.72, w * 0.88];
-    treeX.forEach(function(x) {
-      drawTree(ctx, x, h * 0.55, 10 + Math.random() * 6);
-    });
-    
-    // Frame border (hand-drawn feel)
-    ctx.strokeStyle = palette[3];
-    ctx.globalAlpha = 0.3;
-    ctx.lineWidth = 2;
-    ctx.setLineDash([4, 2]);
-    ctx.strokeRect(3, 3, w - 6, h - 6);
-    ctx.setLineDash([]);
-    ctx.globalAlpha = 1;
-    
-    // Name label at bottom
-    var name = item.name.length > 6 ? item.name.substring(0, 6) + '…' : item.name;
-    ctx.fillStyle = 'rgba(0,0,0,0.55)';
-    ctx.fillRect(0, h - 26, w, 26);
-    ctx.fillStyle = '#fff';
-    ctx.font = 'bold 13px "Noto Sans SC", sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText(name, w / 2, h - 7);
-    ctx.textAlign = 'start';
-  };
-  
-  function drawCloud(ctx, x, y, scale) {
-    ctx.fillStyle = 'rgba(255,255,255,0.8)';
-    ctx.beginPath();
-    ctx.arc(x, y, 12 * scale, 0, Math.PI * 2);
-    ctx.arc(x + 14 * scale, y - 4 * scale, 14 * scale, 0, Math.PI * 2);
-    ctx.arc(x + 28 * scale, y, 11 * scale, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  
-  function drawTree(ctx, x, y, size) {
-    // Trunk
-    ctx.fillStyle = '#8D6E63';
-    ctx.fillRect(x - 2, y - size * 0.7, 4, size * 0.7);
-    // Canopy
-    ctx.fillStyle = '#66BB6A';
-    ctx.beginPath();
-    ctx.arc(x, y - size * 0.8, size * 0.55, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = '#81C784';
-    ctx.beginPath();
-    ctx.arc(x - 3, y - size * 0.65, size * 0.35, 0, Math.PI * 2);
-    ctx.fill();
-  }
-  
-  function drawSceneSilhouette(ctx, w, h, catId, palette) {
-    ctx.fillStyle = palette[3];
-    ctx.globalAlpha = 0.35;
-    var cx = w * 0.45, cy = h * 0.52;
-    
+    svg += '<g fill="rgba(255,255,255,0.8)">';
+    svg += '<circle cx="50" cy="17" r="10"/><circle cx="61" cy="14" r="11"/><circle cx="72" cy="17" r="9"/>';
+    svg += '<circle cx="110" cy="31" r="8"/><circle cx="119" cy="28" r="9"/><circle cx="128" cy="31" r="7"/>';
+    svg += '</g>';
+
+    // Ground fill
+    svg += '<rect x="0" y="' + Math.floor(h * 0.45) + '" width="' + w + '" height="' + Math.floor(h * 0.55) + '" fill="url(#ground' + catId + ')"/>';
+
+    // Scene content based on category
+    var cx = Math.floor(w * 0.45);
+    var cy = Math.floor(h * 0.52);
+    var groundY = Math.floor(h * 0.55);
+
     if (catId === 'nature') {
-      // Mountains + lake
-      ctx.beginPath();
-      ctx.moveTo(cx - 60, h * 0.55);
-      ctx.quadraticCurveTo(cx - 30, h * 0.3, cx, h * 0.42);
-      ctx.quadraticCurveTo(cx + 30, h * 0.28, cx + 55, h * 0.48);
-      ctx.lineTo(cx + 55, h * 0.55);
-      ctx.fill();
+      // Green hills + sun + small trees
+      svg += '<path d="M' + (cx - 60) + ',' + groundY + ' Q' + (cx - 30) + ',' + Math.floor(h * 0.3) + ' ' + cx + ',' + Math.floor(h * 0.42) + ' Q' + (cx + 30) + ',' + Math.floor(h * 0.25) + ' ' + (cx + 55) + ',' + groundY + '" fill="' + p[3] + '" opacity="0.35"/>';
+      svg += '<path d="M' + (cx - 40) + ',' + groundY + ' Q' + (cx - 20) + ',' + Math.floor(h * 0.35) + ' ' + cx + ',' + groundY + '" fill="' + p[3] + '" opacity="0.25"/>';
     } else if (catId === 'commercial') {
-      // Building blocks
-      ctx.fillRect(cx - 25, h * 0.3, 20, h * 0.25);
-      ctx.fillRect(cx + 5, h * 0.22, 16, h * 0.33);
-      ctx.fillRect(cx - 10, h * 0.35, 14, h * 0.2);
-    } else if (catId === 'government' || catId === 'welfare') {
-      // Official building with columns
-      ctx.fillRect(cx - 30, h * 0.28, 60, h * 0.27);
-      ctx.fillRect(cx - 18, h * 0.38, 6, h * 0.17);
-      ctx.fillRect(cx + 10, h * 0.38, 6, h * 0.17);
+      // Colorful building cluster + blue sky
+      svg += '<rect x="' + (cx - 25) + '" y="' + Math.floor(h * 0.3) + '" width="20" height="' + Math.floor(h * 0.25) + '" fill="' + p[3] + '" opacity="0.45"/>';
+      svg += '<rect x="' + (cx + 5) + '" y="' + Math.floor(h * 0.22) + '" width="16" height="' + Math.floor(h * 0.33) + '" fill="' + p[2] + '" opacity="0.55"/>';
+      svg += '<rect x="' + (cx - 10) + '" y="' + Math.floor(h * 0.35) + '" width="14" height="' + Math.floor(h * 0.2) + '" fill="' + p[1] + '" opacity="0.5"/>';
+    } else if (catId === 'welfare') {
+      // Warm house + heart
+      svg += '<rect x="' + (cx - 22) + '" y="' + Math.floor(h * 0.32) + '" width="44" height="' + Math.floor(h * 0.23) + '" fill="' + p[3] + '" opacity="0.35"/>';
+      svg += '<polygon points="' + (cx - 26) + ',' + Math.floor(h * 0.32) + ' ' + cx + ',' + Math.floor(h * 0.2) + ' ' + (cx + 26) + ',' + Math.floor(h * 0.32) + '" fill="#EF5350" opacity="0.4"/>';
+      // Heart
+      svg += '<g transform="translate(' + (cx + 20) + ',' + Math.floor(h * 0.15) + ') scale(0.5)">';
+      svg += '<path d="M0 0 C0 -8 -14 -8 -14 0 C-14 8 0 16 0 20 C0 16 14 8 14 0 C14 -8 0 -8 0 0Z" fill="#E91E63" opacity="0.7"/>';
+      svg += '</g>';
+    } else if (catId === 'government') {
+      // Solemn building + flag
+      svg += '<rect x="' + (cx - 30) + '" y="' + Math.floor(h * 0.28) + '" width="60" height="' + Math.floor(h * 0.27) + '" fill="' + p[3] + '" opacity="0.35"/>';
+      svg += '<rect x="' + (cx - 18) + '" y="' + Math.floor(h * 0.38) + '" width="6" height="' + Math.floor(h * 0.17) + '" fill="' + p[3] + '" opacity="0.4"/>';
+      svg += '<rect x="' + (cx + 10) + '" y="' + Math.floor(h * 0.38) + '" width="6" height="' + Math.floor(h * 0.17) + '" fill="' + p[3] + '" opacity="0.4"/>';
+      // Flag
+      svg += '<rect x="' + (cx + 14) + '" y="' + Math.floor(h * 0.17) + '" width="2" height="' + Math.floor(h * 0.38) + '" fill="#A1887F"/>';
+      svg += '<polygon points="' + (cx + 16) + ',' + Math.floor(h * 0.17) + ' ' + (cx + 32) + ',' + Math.floor(h * 0.21) + ' ' + (cx + 16) + ',' + Math.floor(h * 0.25) + '" fill="#EF5350" opacity="0.6"/>';
     } else if (catId === 'culture') {
-      // Museum/dome shape
-      ctx.beginPath();
-      ctx.arc(cx, h * 0.42, 25, Math.PI, 0);
-      ctx.fillRect(cx - 25, h * 0.42, 50, h * 0.13);
-      ctx.fill();
+      // Museum dome + paintbrush
+      svg += '<path d="M' + (cx - 25) + ',' + Math.floor(h * 0.42) + ' A25 25 0 0 0 ' + (cx + 25) + ',' + Math.floor(h * 0.42) + '" fill="' + p[3] + '" opacity="0.35"/>';
+      svg += '<rect x="' + (cx - 25) + '" y="' + Math.floor(h * 0.42) + '" width="50" height="' + Math.floor(h * 0.13) + '" fill="' + p[3] + '" opacity="0.35"/>';
+      // Paintbrush
+      svg += '<g transform="translate(' + (cx + 28) + ',' + Math.floor(h * 0.12) + ') rotate(15)">';
+      svg += '<rect x="0" y="-2" width="20" height="4" fill="#FFB74D" rx="2"/>';
+      svg += '<polygon points="20,-4 30,0 20,4" fill="#FF5722"/>';
+      svg += '</g>';
     } else if (catId === 'education') {
-      // School building with flag
-      ctx.fillRect(cx - 22, h * 0.3, 44, h * 0.25);
-      ctx.fillRect(cx + 14, h * 0.2, 2, h * 0.35);
-      ctx.fillStyle = '#EF5350';
-      ctx.globalAlpha = 0.5;
-      ctx.beginPath();
-      ctx.moveTo(cx + 16, h * 0.2);
-      ctx.lineTo(cx + 32, h * 0.24);
-      ctx.lineTo(cx + 16, h * 0.28);
-      ctx.fill();
+      // School building + book
+      svg += '<rect x="' + (cx - 22) + '" y="' + Math.floor(h * 0.3) + '" width="44" height="' + Math.floor(h * 0.25) + '" fill="' + p[3] + '" opacity="0.35"/>';
+      svg += '<rect x="' + (cx + 14) + '" y="' + Math.floor(h * 0.2) + '" width="2" height="' + Math.floor(h * 0.35) + '" fill="#A1887F"/>';
+      svg += '<polygon points="' + (cx + 16) + ',' + Math.floor(h * 0.2) + ' ' + (cx + 32) + ',' + Math.floor(h * 0.24) + ' ' + (cx + 16) + ',' + Math.floor(h * 0.28) + '" fill="#EF5350" opacity="0.5"/>';
+      // Book
+      svg += '<g transform="translate(' + (cx - 14) + ',' + Math.floor(h * 0.12) + ') scale(0.4)">';
+      svg += '<path d="M0 5 L15 -15 L30 5 L15 25 Z" fill="#42A5F5" opacity="0.7"/>';
+      svg += '<line x1="15" y1="-15" x2="15" y2="25" stroke="#1E88E5" stroke-width="2" opacity="0.7"/>';
+      svg += '</g>';
     } else {
-      // Generic landmark
-      ctx.beginPath();
-      ctx.moveTo(cx, h * 0.25);
-      ctx.lineTo(cx - 20, h * 0.55);
-      ctx.lineTo(cx + 20, h * 0.55);
-      ctx.closePath();
-      ctx.fill();
+      // Landmark building
+      svg += '<polygon points="' + cx + ',' + Math.floor(h * 0.22) + ' ' + (cx - 20) + ',' + groundY + ' ' + (cx + 20) + ',' + groundY + '" fill="' + p[3] + '" opacity="0.35"/>';
+      // Antenna/tower
+      svg += '<rect x="' + (cx - 1) + '" y="' + Math.floor(h * 0.12) + '" width="2" height="' + Math.floor(h * 0.1) + '" fill="' + p[3] + '" opacity="0.5"/>';
     }
-    ctx.globalAlpha = 1;
+
+    // Decorative trees (small)
+    svg += '<g fill="#66BB6A" opacity="0.55">';
+    svg += '<rect x="28" y="' + Math.floor(groundY - 8) + '" width="3" height="8" fill="#8D6E63" opacity="0.5"/>';
+    svg += '<circle cx="30" cy="' + Math.floor(groundY - 10) + '" r="6"/>';
+    svg += '<rect x="142" y="' + Math.floor(groundY - 7) + '" width="3" height="7" fill="#8D6E63" opacity="0.5"/>';
+    svg += '<circle cx="144" cy="' + Math.floor(groundY - 9) + '" r="5"/>';
+    svg += '<rect x="175" y="' + Math.floor(groundY - 9) + '" width="3" height="9" fill="#8D6E63" opacity="0.5"/>';
+    svg += '<circle cx="177" cy="' + Math.floor(groundY - 11) + '" r="7"/>';
+    svg += '</g>';
+
+    // Decorative frame border (dashed)
+    svg += '<rect x="3" y="3" width="' + (w - 6) + '" height="' + (h - 6) + '" fill="none" stroke="' + p[3] + '" stroke-width="2" stroke-dasharray="4,2" opacity="0.3"/>';
+
+    // Bottom label
+    var name = item.name ? (item.name.length > 6 ? item.name.substring(0, 6) + '…' : item.name) : '';
+    svg += '<rect x="0" y="' + (h - 26) + '" width="' + w + '" height="26" fill="rgba(0,0,0,0.55)"/>';
+    svg += '<text x="' + Math.floor(w / 2) + '" y="' + (h - 7) + '" fill="#fff" font-family="Noto Sans SC, sans-serif" font-size="13" font-weight="bold" text-anchor="middle">' + name + '</text>';
+
+    svg += '</svg>';
+    return svg;
   }
-  
-  window.showLightboxCanvas = function(canvasId) {
-    var canvas = document.getElementById(canvasId);
-    if (!canvas) return;
-    var dataUrl = canvas.toDataURL('image/png');
-    document.getElementById('lightboxImg').src = dataUrl;
-    document.getElementById('lightbox').classList.add('show');
-  };
-  
+
   window.showLightbox = function(url) {
     document.getElementById('lightboxImg').src = url;
     document.getElementById('lightbox').classList.add('show');
