@@ -144,9 +144,9 @@ body {
 .popup-note { margin-top:8px; padding:6px 10px; background:#FFF8E1; border-radius:8px; font-size:11px; color:#F57F17; }
 
 /* Photos in popup */
-.popup-photos { display: flex; gap: 6px; margin-top: 10px; overflow-x: auto; padding-bottom: 4px; }
-.popup-photos img { width: 80px; height: 60px; border-radius: 8px; object-fit: cover; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; flex-shrink: 0; filter: saturate(1.3) contrast(1.1) sepia(0.15) hue-rotate(-5deg); background: #f5f5f5; }
-.popup-photos img:hover { border-color: #FFB74D; filter: saturate(1.5) contrast(1.15) sepia(0.2) hue-rotate(-8deg) brightness(1.05); }
+.popup-photos { display: flex; gap: 8px; margin-top: 10px; overflow-x: auto; padding-bottom: 4px; }
+.popup-photos canvas { border-radius: 10px; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; flex-shrink: 0; filter: saturate(1.15) contrast(1.05); }
+.popup-photos canvas:hover { border-color: #FFB74D; transform: scale(1.05); box-shadow: 0 4px 12px rgba(0,0,0,0.12); }
 
 /* Lightbox */
 .lightbox-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center; cursor: pointer; }
@@ -341,11 +341,15 @@ var RESOURCE_DATA = {"center":{"name":"深大诺德幼儿园","address":"深圳�
       }
     }
 
-    // Photos with lightbox
+    // Scene cards generated via Canvas (zero copyright, hand-drawn style)
     var photosHtml = '';
-    var p = item.photos || [];
-    if (p.length > 0) {
-      photosHtml = '<div class="popup-photos">' + p.map(function(url) { return '<img src="' + url + '" alt="实景" loading="lazy" onclick="showLightbox(\'' + url + '\')" onerror="this.parentNode.removeChild(this)" />'; }).join('') + '</div>';
+    if (item.name) {
+      var canvasId = 'canvas-' + item.id + '-' + Date.now();
+      photosHtml = '<div class="popup-photos"><canvas id="' + canvasId + '" width="200" height="140" onclick="showLightboxCanvas(\'' + canvasId + '\')"></canvas></div>';
+      // Schedule canvas rendering after DOM insertion
+      setTimeout(function() {
+        drawSceneCard(canvasId, item);
+      }, 10);
     }
 
     return '<div class="popup-card"><div class="popup-header"><div class="popup-name">' + item.name + '</div><span class="popup-cat-tag" style="background:' + item._catColor + '">' + item._catName + '</span></div><div class="popup-body"><div class="popup-row"><span class="popup-label">📏</span><span class="popup-value">距离幼儿园约 <b>' + item.distance + ' 公里</b></span></div>' + (item.address ? '<div class="popup-row"><span class="popup-label">📍</span><span class="popup-value">' + item.address + '</span></div>' : '') + (item.feature ? '<div class="popup-row"><span class="popup-label">✨</span><span class="popup-value">' + item.feature + '</span></div>' : '') + (actList.length > 0 ? '<span class="popup-section-title">🎯 适合的活动</span>' + tagsHtml : '') + trafficHtml + notesHtml + photosHtml + '</div></div>';
@@ -638,6 +642,182 @@ var RESOURCE_DATA = {"center":{"name":"深大诺德幼儿园","address":"深圳�
   }
 
   // --- Lightbox ---
+  // --- Scene Card Drawing (Canvas, zero copyright) ---
+  window.drawSceneCard = function(canvasId, item) {
+    var canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    var ctx = canvas.getContext('2d');
+    var w = canvas.width, h = canvas.height;
+    
+    // Get category color as base
+    var colors = {
+      nature: ['#C8E6C9', '#A5D6A7', '#81C784', '#66BB6A'],
+      commercial: ['#FFE0B2', '#FFCC80', '#FFB74D', '#FFA726'],
+      welfare: ['#F8BBD0', '#F48FB1', '#F06292', '#EC407A'],
+      government: ['#BBDEFB', '#90CAF9', '#64B5F6', '#42A5F5'],
+      culture: ['#E1BEE7', '#CE93D8', '#BA68C8', '#AB47BC'],
+      education: ['#B2DFDB', '#80CBC4', '#4DB6AC', '#26A69A'],
+      other: ['#D7CCC8', '#BCAAA4', '#A1887F', '#8D6E63']
+    };
+    var palette = colors[item._catId] || colors.other;
+    
+    // Sky gradient
+    var skyGrad = ctx.createLinearGradient(0, 0, 0, h * 0.45);
+    skyGrad.addColorStop(0, '#E3F2FD');
+    skyGrad.addColorStop(0.5, '#BBDEFB');
+    skyGrad.addColorStop(1, '#E8F5E9');
+    ctx.fillStyle = skyGrad;
+    ctx.fillRect(0, 0, w, h * 0.5);
+    
+    // Sun
+    ctx.fillStyle = '#FFF9C4';
+    ctx.beginPath();
+    ctx.arc(w * 0.78, h * 0.18, 14, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#FFF176';
+    ctx.beginPath();
+    ctx.arc(w * 0.78, h * 0.18, 9, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Clouds
+    drawCloud(ctx, w * 0.25, h * 0.12, 0.8);
+    drawCloud(ctx, w * 0.55, h * 0.22, 0.6);
+    
+    // Ground
+    var groundGrad = ctx.createLinearGradient(0, h * 0.45, 0, h);
+    groundGrad.addColorStop(0, palette[0]);
+    groundGrad.addColorStop(0.3, palette[1]);
+    groundGrad.addColorStop(1, palette[2]);
+    ctx.fillStyle = groundGrad;
+    ctx.fillRect(0, h * 0.45, w, h * 0.55);
+    
+    // Ground texture lines (hand-drawn feel)
+    ctx.strokeStyle = palette[3];
+    ctx.globalAlpha = 0.2;
+    ctx.lineWidth = 1;
+    for (var i = 0; i < 6; i++) {
+      var gx = Math.random() * w;
+      var gy = h * 0.5 + Math.random() * h * 0.45;
+      ctx.beginPath();
+      ctx.moveTo(gx, gy);
+      ctx.quadraticCurveTo(gx + 30, gy - 8, gx + 60, gy + 2);
+      ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    
+    // Building/Scene silhouette based on category
+    drawSceneSilhouette(ctx, w, h, item._catId, palette);
+    
+    // Decorative trees
+    var treeX = [w * 0.15, w * 0.72, w * 0.88];
+    treeX.forEach(function(x) {
+      drawTree(ctx, x, h * 0.55, 10 + Math.random() * 6);
+    });
+    
+    // Frame border (hand-drawn feel)
+    ctx.strokeStyle = palette[3];
+    ctx.globalAlpha = 0.3;
+    ctx.lineWidth = 2;
+    ctx.setLineDash([4, 2]);
+    ctx.strokeRect(3, 3, w - 6, h - 6);
+    ctx.setLineDash([]);
+    ctx.globalAlpha = 1;
+    
+    // Name label at bottom
+    var name = item.name.length > 6 ? item.name.substring(0, 6) + '…' : item.name;
+    ctx.fillStyle = 'rgba(0,0,0,0.55)';
+    ctx.fillRect(0, h - 26, w, 26);
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 13px "Noto Sans SC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(name, w / 2, h - 7);
+    ctx.textAlign = 'start';
+  };
+  
+  function drawCloud(ctx, x, y, scale) {
+    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+    ctx.beginPath();
+    ctx.arc(x, y, 12 * scale, 0, Math.PI * 2);
+    ctx.arc(x + 14 * scale, y - 4 * scale, 14 * scale, 0, Math.PI * 2);
+    ctx.arc(x + 28 * scale, y, 11 * scale, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  
+  function drawTree(ctx, x, y, size) {
+    // Trunk
+    ctx.fillStyle = '#8D6E63';
+    ctx.fillRect(x - 2, y - size * 0.7, 4, size * 0.7);
+    // Canopy
+    ctx.fillStyle = '#66BB6A';
+    ctx.beginPath();
+    ctx.arc(x, y - size * 0.8, size * 0.55, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#81C784';
+    ctx.beginPath();
+    ctx.arc(x - 3, y - size * 0.65, size * 0.35, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  
+  function drawSceneSilhouette(ctx, w, h, catId, palette) {
+    ctx.fillStyle = palette[3];
+    ctx.globalAlpha = 0.35;
+    var cx = w * 0.45, cy = h * 0.52;
+    
+    if (catId === 'nature') {
+      // Mountains + lake
+      ctx.beginPath();
+      ctx.moveTo(cx - 60, h * 0.55);
+      ctx.quadraticCurveTo(cx - 30, h * 0.3, cx, h * 0.42);
+      ctx.quadraticCurveTo(cx + 30, h * 0.28, cx + 55, h * 0.48);
+      ctx.lineTo(cx + 55, h * 0.55);
+      ctx.fill();
+    } else if (catId === 'commercial') {
+      // Building blocks
+      ctx.fillRect(cx - 25, h * 0.3, 20, h * 0.25);
+      ctx.fillRect(cx + 5, h * 0.22, 16, h * 0.33);
+      ctx.fillRect(cx - 10, h * 0.35, 14, h * 0.2);
+    } else if (catId === 'government' || catId === 'welfare') {
+      // Official building with columns
+      ctx.fillRect(cx - 30, h * 0.28, 60, h * 0.27);
+      ctx.fillRect(cx - 18, h * 0.38, 6, h * 0.17);
+      ctx.fillRect(cx + 10, h * 0.38, 6, h * 0.17);
+    } else if (catId === 'culture') {
+      // Museum/dome shape
+      ctx.beginPath();
+      ctx.arc(cx, h * 0.42, 25, Math.PI, 0);
+      ctx.fillRect(cx - 25, h * 0.42, 50, h * 0.13);
+      ctx.fill();
+    } else if (catId === 'education') {
+      // School building with flag
+      ctx.fillRect(cx - 22, h * 0.3, 44, h * 0.25);
+      ctx.fillRect(cx + 14, h * 0.2, 2, h * 0.35);
+      ctx.fillStyle = '#EF5350';
+      ctx.globalAlpha = 0.5;
+      ctx.beginPath();
+      ctx.moveTo(cx + 16, h * 0.2);
+      ctx.lineTo(cx + 32, h * 0.24);
+      ctx.lineTo(cx + 16, h * 0.28);
+      ctx.fill();
+    } else {
+      // Generic landmark
+      ctx.beginPath();
+      ctx.moveTo(cx, h * 0.25);
+      ctx.lineTo(cx - 20, h * 0.55);
+      ctx.lineTo(cx + 20, h * 0.55);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+  
+  window.showLightboxCanvas = function(canvasId) {
+    var canvas = document.getElementById(canvasId);
+    if (!canvas) return;
+    var dataUrl = canvas.toDataURL('image/png');
+    document.getElementById('lightboxImg').src = dataUrl;
+    document.getElementById('lightbox').classList.add('show');
+  };
+  
   window.showLightbox = function(url) {
     document.getElementById('lightboxImg').src = url;
     document.getElementById('lightbox').classList.add('show');
