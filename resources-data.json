@@ -1488,7 +1488,9 @@
           "activities": "校园参观、历史教育体验",
           "activitiesUpdated": "【校史馆小小研学】参观老照片、旧教具，了解南山本地教育历史；【古建筑美学观察】观察飞檐、回廊、欧式门窗，感受传统与复古建筑；【园林休憩写生】在庭院草坪安静观察景观，画下好看的花草建筑。",
           "notes": "",
-          "photos": [],
+          "photos": [
+            "photos_gen/e08.png"
+          ],
           "baiduImageUrl": "https://image.baidu.com/search?word=%E5%8D%97%E5%A4%B4%E4%B8%AD%E5%AD%A6%20%E6%B7%B1%E5%9C%B3%E5%8D%97%E5%B1%B1%20%E5%AE%9E%E6%99%AF"
         },
         {
