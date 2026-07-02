@@ -1454,7 +1454,9 @@
           "activities": "校园参观、国际教育体验",
           "activitiesUpdated": "【双语互动小游戏】外教、小学生带领幼儿进行简单英文对话游戏；【小动物观察日记】参观饲养区，观察兔子、小鸟等小动物；【屋顶花园探索】辨认园区绿植，感受分层种植景观。",
           "notes": "",
-          "photos": [],
+          "photos": [
+            "photos_gen/e06.png"
+          ],
           "baiduImageUrl": "https://image.baidu.com/search?word=%E6%B7%B1%E5%9C%B3%E5%8D%97%E5%B1%B1%E4%B8%AD%E8%8B%B1%E6%96%87%E5%AD%A6%E6%A0%A1%20%E6%B7%B1%E5%9C%B3%E5%8D%97%E5%B1%B1%20%E5%AE%9E%E6%99%AF"
         },
         {
