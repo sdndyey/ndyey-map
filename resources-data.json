@@ -1539,7 +1539,9 @@
           "activities": "校园参观、自然观察",
           "activitiesUpdated": "【职业角色扮演】学前教育专业大学生陪幼儿玩过家家、绘本互动；【创意美术手工】艺术设计专业学生带领幼儿做黏土、拼贴画；【园艺花卉培育】在园艺实训区认识花草，学习简单扦插、养护知识。",
           "notes": "",
-          "photos": [],
+          "photos": [
+            "photos_gen/e11.png"
+          ],
           "baiduImageUrl": "https://image.baidu.com/search?word=%E6%B7%B1%E5%9C%B3%E8%81%8C%E4%B8%9A%E6%8A%80%E6%9C%AF%E5%A4%A7%E5%AD%A6%20%E6%B7%B1%E5%9C%B3%E5%8D%97%E5%B1%B1%20%E5%AE%9E%E6%99%AF"
         },
         {
