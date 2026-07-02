@@ -1403,7 +1403,9 @@
           "activities": "校园参观、外语课程体验",
           "activitiesUpdated": "【趣味英文小游戏】观摩小学英语课堂，参与简单单词互动游戏；【小小戏剧观众】观看校园幼儿向短剧表演，感受舞台表达；【多元节日认知】了解中外特色节日装饰、习俗，拓展文化视野。",
           "notes": "",
-          "photos": [],
+          "photos": [
+            "photos_gen/e03.png"
+          ],
           "baiduImageUrl": "https://image.baidu.com/search?word=%E6%B7%B1%E5%A4%A7%E9%99%84%E5%B1%9E%E6%95%99%E8%82%B2%E9%9B%86%E5%9B%A2%E5%A4%96%E5%9B%BD%E8%AF%AD%E5%B0%8F%E5%AD%A6%20%E6%B7%B1%E5%9C%B3%E5%8D%97%E5%B1%B1%20%E5%AE%9E%E6%99%AF"
         },
         {
