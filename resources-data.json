@@ -1431,13 +1431,15 @@
           "distance": 2.12,
           "lat": 22.504238,
           "lng": 113.897201,
-          "address": "初中部：深圳市南山区前海路0353号；高中部：深圳市南山区前海路0019号",
+          "address": "初中部：深圳市南山区前海路0353号",
           "feature": "双语教学国际化教育",
           "featureUpdated": "深圳大学附属完全中学，覆盖初高中，配套校园科技馆、书画展厅、大型综合运动场。",
           "activities": "校园参观、国际文化交流",
           "activitiesUpdated": "【趣味科学小实验】中学生志愿者带领体验简易光影、浮力小实验；【青少年画展赏析】参观校园书画展厅，欣赏青少年美术作品；【操场体能游戏】在宽阔运动场开展跑跳、平衡类体能活动。",
           "notes": "",
-          "photos": [],
+          "photos": [
+            "photos_gen/e05.png"
+          ],
           "baiduImageUrl": "https://image.baidu.com/search?word=%E6%B7%B1%E5%A4%A7%E9%99%84%E4%B8%AD%EF%BC%88%E5%88%9D%E4%B8%AD%E3%80%81%E9%AB%98%E4%B8%AD%EF%BC%89%20%E6%B7%B1%E5%9C%B3%E5%8D%97%E5%B1%B1%20%E5%AE%9E%E6%99%AF"
         },
         {
