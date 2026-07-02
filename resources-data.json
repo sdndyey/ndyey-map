@@ -1556,7 +1556,9 @@
           "activities": "校园参观、科研体验",
           "activitiesUpdated": "【科普展厅探秘】参观物理、生物科普展品，直观感受科学现象；【天文简易观测】借助小型设备观察云朵、太阳光影；【原生自然研学】校园原生公园认识本土草木、昆虫，开展户外科学探究。",
           "notes": "",
-          "photos": [],
+          "photos": [
+            "photos_gen/e12.png"
+          ],
           "baiduImageUrl": "https://image.baidu.com/search?word=%E5%8D%97%E6%96%B9%E7%A7%91%E6%8A%80%E5%A4%A7%E5%AD%A6%20%E6%B7%B1%E5%9C%B3%E5%8D%97%E5%B1%B1%20%E5%AE%9E%E6%99%AF"
         }
       ]
