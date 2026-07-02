@@ -1522,7 +1522,9 @@
           "activities": "校园参观、创新教育交流",
           "activitiesUpdated": "【机器人趣味观摩】观看机器人行走、搬运演示，简单互动操控；【创意手工造物】利用创客材料拼搭简易小车、小动物模型；【水系自然探索】观察池塘小鱼、水生植物，了解水边生态。",
           "notes": "",
-          "photos": [],
+          "photos": [
+            "photos_gen/e10.png"
+          ],
           "baiduImageUrl": "https://image.baidu.com/search?word=%E9%BA%92%E9%BA%9F%E4%B8%AD%E5%AD%A6%20%E6%B7%B1%E5%9C%B3%E5%8D%97%E5%B1%B1%20%E5%AE%9E%E6%99%AF"
         },
         {
