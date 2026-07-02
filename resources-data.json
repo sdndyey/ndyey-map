@@ -1420,7 +1420,9 @@
           "activities": "校园参观、教育交流",
           "activitiesUpdated": "【小菜园种植体验】跟随小学生播种、浇水、采摘蔬果；【联合美术创作】共用美工教室，完成风景画、手工摆件；【田间自然探索】观察蔬菜生长，认识常见农作物。",
           "notes": "",
-          "photos": [],
+          "photos": [
+            "photos_gen/e04.png"
+          ],
           "baiduImageUrl": "https://image.baidu.com/search?word=%E8%8D%94%E6%B9%BE%E5%B0%8F%E5%AD%A6%20%E6%B7%B1%E5%9C%B3%E5%8D%97%E5%B1%B1%20%E5%AE%9E%E6%99%AF"
         },
         {
