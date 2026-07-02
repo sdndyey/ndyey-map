@@ -1369,7 +1369,9 @@
           "activities": "校园参观、教育交流",
           "activitiesUpdated": "【幼小衔接初体验】参观小学教室、观摩升旗仪式、课间活动，感受小学生一日流程；【绘本共读时光】和小学低年级学生共享图书室绘本，开展同伴阅读；【校园散步观察】认识校园绿植、教学楼，对比幼儿园与小学环境差异。",
           "notes": "",
-          "photos": [],
+          "photos": [
+            "photos_gen/e01.png"
+          ],
           "baiduImageUrl": "https://image.baidu.com/search?word=%E8%8D%94%E6%9E%97%E5%B0%8F%E5%AD%A6%20%E6%B7%B1%E5%9C%B3%E5%8D%97%E5%B1%B1%20%E5%AE%9E%E6%99%AF"
         },
         {
